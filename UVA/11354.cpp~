@@ -1,0 +1,231 @@
+#include<iostream>
+#include<cstring>
+#include<set>
+#include<map>
+#include<cmath>
+#include<stack>
+#include<queue>
+#include<deque>
+#include<list>
+#include<algorithm>
+#include<stdio.h>
+#include<iomanip>
+
+#define rep(i,n) for(int i=0;i<n;++i)
+#define fab(i,a,b) for(int i=a;i<=b;++i)
+#define fba(i,b,a) for(int i=b;i>=a;--i)
+#define PB push_back
+#define INF 1e9
+#define MP make_pair
+#define lson l,m,rt<<1
+#define rson m+1,r,rt<<1|1
+#define sf scanf
+#define pf printf
+#define LL long long
+const int N=100015;
+using namespace std;
+typedef pair<int,int>PII;
+struct LCA {
+  int n;
+  int fa[maxn];   // 父亲数组
+  int cost[maxn]; // 和父亲的费用
+  int L[maxn];    // 层次（根节点层次为0）
+  int anc[maxn][logmaxn];     // anc[p][i]是结点p的第2^i级父亲。anc[i][0] = fa[i]
+  int maxcost[maxn][logmaxn]; // maxcost[p][i]是i和anc[p][i]的路径上的最大费用
+
+  // 预处理，根据fa和cost数组求出anc和maxcost数组
+  void preprocess() {
+    for(int i = 0; i < n; i++) {
+      anc[i][0] = fa[i]; maxcost[i][0] = cost[i];
+      for(int j = 1; (1 << j) < n; j++) anc[i][j] = -1;
+    }   
+    for(int j = 1; (1 << j) < n; j++)
+      for(int i = 0; i < n; i++)
+        if(anc[i][j-1] != -1) {
+          int a = anc[i][j-1];
+          anc[i][j] = anc[a][j-1];
+          maxcost[i][j] = max(maxcost[i][j-1], maxcost[a][j-1]);
+        }
+  }
+
+  // 求p到q的路径上的最大权
+  int query(int p, int q) {
+    int tmp, log, i;
+    if(L[p] < L[q]) swap(p, q);
+    for(log = 1; (1 << log) <= L[p]; log++); log--;
+
+    int ans = -INF;
+    for(int i = log; i >= 0; i--)
+      if (L[p] - (1 << i) >= L[q]) { ans = max(ans, maxcost[p][i]); p = anc[p][i];}
+   
+    if (p == q) return ans; // LCA为p
+   
+    for(int i = log; i >= 0; i--)
+      if(anc[p][i] != -1 && anc[p][i] != anc[q][i]) {
+        ans = max(ans, maxcost[p][i]); p = anc[p][i];
+        ans = max(ans, maxcost[q][i]); q = anc[q][i];
+      }
+
+    ans = max(ans, cost[p]);
+    ans = max(ans, cost[q]);
+    return ans; // LCA为fa[p]（它也等于fa[q]）
+  }  
+};
+/*
+struct LCA{
+    int n,fa[N],cost[N],dep[N],anc[N][20],maxcost[N][20];
+    void pre(){
+        rep(i,n){
+            anc[i][0]=fa[i];maxcost[i][0]=cost[i];
+            for(int j=1; (1<<j) < n; j++)anc[i][j]=-1;
+        }
+        for(int j=1;(1<<j)<n;j++){
+            rep(i,n){
+                if(~anc[i][j-1]){
+                    int p=anc[i][j-1];
+                    maxcost[i][j]=max(maxcost[i][j-1],maxcost[p][j-1]);
+                }
+            }
+        }
+    }
+    int qurry(int p,int q){
+        int k=0;
+        if(dep[p]<dep[q])swap(p,q);
+        while((1<<(k+1))<=dep[p])k++;
+        int ans=-INF;
+        fba(i,k,0)if(dep[p]-(1<<i)>=dep[q]){
+            ans=max(ans,maxcost[p][i]);
+            p=anc[p][i];
+        }
+        if(p==q)return ans;//lca = p
+        fba(i,k,0)if(~anc[p][i]&&anc[p][i]!=anc[q][i]){
+            ans=max(ans,maxcost[p][i]);p=anc[p][i];
+            ans=max(ans,maxcost[q][i]);q=anc[q][i];
+        }
+        ans=max(ans,cost[p]);
+        ans=max(ans,cost[q]);
+        return ans;//lca =fa[p]=fb[q];
+    }
+}solver;*/
+#define X first
+#define Y second
+struct Edge{
+    int u,v,w;
+    bool operator<(const Edge& rhs)const{
+        return w<rhs.w;
+    }
+}E[N];
+vector<PII>G[N];
+int pa[N];
+int n,m;
+void init(){
+    rep(i,N){
+        pa[i]=i;
+        G[i].clear();
+    }
+    rep(i,m){
+        sf("%d%d%d",&E[i].u,&E[i].v,&E[i].w);
+        E[i].u--;E[i].v--;
+    }
+    sort(E,E+m);
+}
+void dfs(int u,int fa,int lev){
+    solver.dep[u]=lev;
+    rep(i,G[u].size()){
+        int v=G[u][i].X;
+        if(v!=fa){
+            solver.fa[v]=u;
+            solver.cost[v]=G[u][i].Y;
+            dfs(v,u,lev+1);
+        }
+    }
+}
+int find(int x){return x==pa[x]?x:pa[x]=find(pa[x]);}
+bool flag=0;
+void solve(){
+    rep(i,m){
+        int u=find(E[i].u),v=find(E[i].v);
+        if(u!=v){
+            pa[u]=v;
+            G[u].PB(MP(v,E[i].w));
+            G[v].PB(MP(u,E[i].w));
+        }
+    }
+    solver.n=n;
+    dfs(0,-1,0);
+    solver.pre();
+    if(flag)puts("");flag=1;
+    int Q;sf("%d",&Q);
+    int u,v;
+    while(Q--){
+        sf("%d%d",&u,&v);
+        pf("%d\n",solver.qurry(u-1,v-1));
+    }
+}
+int main(){
+    while(~sf("%d%d",&n,&m)&&n){
+        init();
+        solve();
+    }
+    return 0;
+}
+/*const int maxn= 101000;
+int pa[maxn];
+int findset(int x) { return pa[x] != x ? pa[x] = findset(pa[x]) : x; } 
+
+vector<int> G[maxn], C[maxn];
+
+void dfs(int u, int fa, int level) {
+  solver.dep[u] = level;
+  for(int i = 0; i < G[u].size(); i++) {
+    int v = G[u][i];
+    if(v != fa) {
+      solver.fa[v] = u;
+      solver.cost[v] = C[u][i];
+      dfs(v, u, level+1);
+    }
+  }
+}
+
+struct Edge {
+  int x, y, d;
+  bool operator < (const Edge& rhs) const {
+    return d < rhs.d;
+  }
+};
+
+const int maxm = 100000;
+Edge e[maxm];
+
+int main() {
+  int kase = 0, n, m, x, y, d, Q;
+  while(scanf("%d%d", &n, &m) == 2 && n) {
+    for(int i = 0; i < m; i++) {
+      scanf("%d%d%d", &x, &y, &d);
+      e[i] = (Edge){ x-1, y-1, d };
+    }
+    // 最小生成树
+    sort(e, e+m);
+    for(int i = 0; i < n; i++) { pa[i] = i; G[i].clear(); C[i].clear(); }
+    for(int i = 0; i < m; i++) {
+      int x = e[i].x, y = e[i].y, d = e[i].d, u = findset(x), v = findset(y);
+      if(u != v) {
+        pa[u] = v;
+        G[x].push_back(y); C[x].push_back(d);
+        G[y].push_back(x); C[y].push_back(d);
+      }
+    }
+    // 化成有根树
+    solver.n = n;
+    dfs(0, -1, 0);
+    solver.pre();
+
+    if(++kase != 1) printf("\n");
+    scanf("%d", &Q);
+    while(Q--) {
+      scanf("%d%d", &x, &y);
+      printf("%d\n", solver.qurry(x-1, y-1));
+    }
+  }
+  return 0;
+}*/

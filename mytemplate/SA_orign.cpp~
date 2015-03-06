@@ -1,0 +1,71 @@
+#include<iostream>
+#include<cstring>
+#include<set>
+#include<map>
+#include<cmath>
+#include<stack>
+#include<queue>
+#include<deque>
+#include<list>
+#include<algorithm>
+#include<stdio.h>
+#include<iomanip>
+
+#define rep(i,n) for(int i=0;i<n;++i)
+#define fab(i,a,b) for(int i=a;i<=b;++i)
+#define fba(i,b,a) for(int i=b;i>=a;--i)
+#define PB push_back
+#define INF 0x3f3f3f3f
+#define MP make_pair
+#define lson l,m,rt<<1
+#define rson m+1,r,rt<<1|1
+#define sf scanf
+#define pf printf
+#define LL long long
+const int N=1005;
+using namespace std;
+typedef pair<int,int>PII;
+int wa[N],wb[N],wv[N],Ws[N];
+int sa[N],rank[N],height[N];
+int cmp(int *r,int a,int b,int l){
+    return r[a]==r[b]&&r[a+l]==r[b+l];
+}
+void Da(int *r,int n,int m){
+    int i,j,p,*x=wa,*y=wb,*t;
+    for(i=0;i<m;i++)Ws[i]=0;
+    for(i=0;i<n;i++)Ws[x[i]=r[i]]++;
+    for(i=1;i<m;i++)Ws[i]+=Ws[i-1];
+    for(i=n-1;i>=0;i--)sa[--Ws[x[i]]]=i;
+    for(j=1,p=1;p<n;j*=2,m=p){
+        for(p=0,i=n-j;i<n;i++)y[p++]=i;
+        for(i=0;i<n;i++)if(sa[i]>=j)y[p++]=sa[i]-j;
+        for(i=0;i<n;i++)wv[i]=x[y[i]];
+        for(i=0;i<m;i++)Ws[i]=0;
+        for(i=0;i<n;i++)Ws[wv[i]]++;
+        for(i=1;i<m;i++)Ws[i]+=Ws[i-1];
+        for(i=n-1;i>=0;i--)sa[--Ws[wv[i]]]=y[i];
+        for(t=x,x=y,y=t,p=1,x[sa[0]]=0,i=1;i<n;i++)
+            x[sa[i]]=cmp(y,sa[i-1],sa[i],j)?p-1:p++;
+    }
+    return ;
+}
+void getHeight(int* r,int n){
+   int i,j,k=0;
+   for(i=1;i<=n;i++)rank[sa[i]]=i;
+   for(i=0;i<n;height[rank[i++]]=k)
+   for(k?k--:0,j=sa[rank[i]-1];rank[i+k]==rank[j+k];k++);
+   return;
+}
+int main(){
+    int a[6];
+    rep(i,5){sf("%d",&a[i]);}
+    a[5]=0;
+    Da(a,6,10);
+    getHeight(a,5);
+    rep(i,6){
+      pf("%d %d %d\n",a[sa[i]],rank[i],height[i]);
+    }
+    return 0;
+}
+
+

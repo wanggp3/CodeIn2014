@@ -1,0 +1,149 @@
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+#include<queue>
+using namespace std;
+const int N=510,M=2010,inf=0x3f3f3f3f;
+struct edg
+{
+    int y,next,d;
+}e[M];
+int dis1[N],dis2[N],pre1[N],pre2[N],n,m,k,s,t;
+int lk[N],tot;
+struct node
+{
+    int x,d;
+    bool operator <(const node&o)const
+    {
+        return d>o.d;
+    }
+};
+priority_queue<node>q;
+
+void add(int x,int y,int d)
+{
+    e[tot].y=y;
+    e[tot].d=d;
+    e[tot].next=lk[x];
+    lk[x]=tot++;
+}
+
+void dij(int s,int t,int dis[],int pre[])
+{
+    for (int i=1;i<=n;i++) dis[i]=inf; //here can't use memset
+    dis[s]=0;
+    pre[s]=-1;
+    q.push((node){s,0});
+    while (!q.empty()) {
+        node u=q.top(); q.pop();
+        if (dis[u.x]!=u.d) continue;
+        for (int i=lk[u.x];i>-1;i=e[i].next) {
+            int y=e[i].y;
+            if (dis[y]>dis[u.x]+e[i].d) {
+                dis[y]=dis[u.x]+e[i].d;
+                pre[y]=u.x;
+                q.push((node){y,dis[y]});
+            }
+        }
+    }
+}
+
+int ans,ax,ay,ad;
+int used;
+
+void output1()
+{
+    int x=s;
+    while (x!=-1) {
+        printf("%d",x);
+        if (x==t) printf("\n");
+        else printf(" ");
+        x=pre2[x];
+    }
+    printf("Ticket Not Used\n");
+    printf("%d\n",dis1[t]);
+}
+
+int path[N];
+
+void output2(int ticket,int ans)
+{
+    int cnt=0;
+    while (ax!=-1) {
+        path[cnt++]=ax;
+        ax=pre1[ax];
+    }
+    for (int i=cnt-1;i>=0;i--) {
+        printf("%d ",path[i]);
+    }
+    cnt=0;
+    while (ay!=-1) {
+        path[cnt++]=ay;
+        ay=pre2[ay];
+    }
+    for (int i=0;i<cnt;i++) {
+        printf("%d",path[i]);
+        if (i==cnt-1) printf("\n");
+        else printf(" ");
+    }
+    printf("%d\n",ticket);
+    printf("%d\n",ans);
+}
+
+int main()
+{
+   // freopen("1.txt","r",stdin);
+    int ca=0;
+    while (~scanf("%d%d%d",&n,&s,&t)) {
+        if (ca) printf("\n");
+        ca++;
+        //input
+        memset(lk,-1,sizeof(lk));
+        tot=0;
+        scanf("%d",&m);
+        while (m--) {
+            int x,y,d;
+            scanf("%d%d%d",&x,&y,&d);
+            add(x,y,d);
+            add(y,x,d);
+        }
+        //calculate
+        dij(s,t,dis1,pre1);
+        dij(t,s,dis2,pre2);
+        scanf("%d",&k);
+        ans=dis1[t];
+        used=-1;
+        for (int i=1;i<=k;i++) {
+            int x,y,d;
+            scanf("%d%d%d",&x,&y,&d);
+            if (x==y) continue;
+            if (dis1[x]+d+dis2[y]<ans) {
+                ans=dis1[x]+d+dis2[y];
+                ax=x; ay=y; ad=d;
+                used=x;
+            }
+            if (dis1[y]+d+dis2[x]<ans) {
+                ans=dis1[y]+d+dis2[x];
+                ax=y; ay=x; ad=d;
+                used=y;
+            }
+        }
+        //output
+        if (used==-1) {
+            output1();
+        }
+        else output2(used,ans);
+
+
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+
+

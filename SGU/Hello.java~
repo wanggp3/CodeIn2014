@@ -1,0 +1,22 @@
+import java.math.BigInteger;
+import java.util.*;
+import java.io.*;
+
+public class Solution{
+    public static void main(String args[]){
+        Scanner cin = new Scanner(System.in);
+        BigInteger n = cin.nextBigInteger();
+        BigInteger ans=BigInteger.ONE;
+        BigInteger L=BigInteger.ONE;
+        BigInteger R=n;
+        BigInteger M;
+        while(L.compareTo(R)==-1){
+            M=((L.add(R)).divide(BigInteger.valueOf(2)));
+            if((M.multiply(M)).compareTo(n)<=0){
+                ans=M;
+                L=M.add(BigInteger.ONE);
+            }else R=M.subtract(BigInteger.ONE);
+        }
+        System.out.println(ans);
+    }
+}
